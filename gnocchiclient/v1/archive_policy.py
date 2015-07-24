@@ -11,52 +11,58 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-
 from gnocchiclient.common import base
 from gnocchiclient.common import utils
 import gnocchiclient.exc as exc
 
 
-UPDATE_ATTR = [
-    "archive_policy_name"
+CREATE_ATTR = [
+    "name",
+    "back_window",
+    "definition",
 ]
 
-class Metric(base.Resource):
+UPDATE_ATTR = CREATE_ATTR + ["aggregation_methods"]
+
+
+class ArchivePolicy(base.Resource):
     def __repr__(self):
-        return "<Metric %s>" % self._info
+        return "<ArchivePolicy %s>" % self._info
 
     def data(self, **kwargs):
         return self.manager.data(self, **kwargs)
 
 
-class MetricManager(base.Manager):
-    resource_class = Metric
+class ArchivePolicyManager(base.Manager):
+    resource_class = ArchivePolicy
 
-    def list(self):
-        path = '/v1/metric'
-        return self._list(path, 'metric')
+    def list(self, **kwargs):
+        path = '/v1/archive_policy'
+        return self._list(path, 'archive_policy')
 
-    def get(self, metric_id):
-        path = '/v1/metric/%s' % metric_id
+    def get(self, name):
+        path = '/v1/archive_policy/%s' % name
         try:
             return self._list(path, expect_single=True)[0]
         except IndexError:
             return None
 
     def create(self, **kwargs):
-        path = '/v1/metric'
+        path = '/v1/archive_policy'
         new = dict((key, value) for (key, value) in kwargs.items()
                    if (key in UPDATE_ATTR))
         return self._create(path, new)
 
-    def update(self, id, **kwargs):
-        metric = self.get(id)
-        if metric is None:
-            raise exc.CommandError('Metric not found: %s' % id)
-        updated = metric.to_dict()
+    def update(self, name, **kwargs):
+        archive_policy = self.get(name)
+        if archive_policy is None:
+            raise exc.CommandError('ArchivePolicy not found: %s' % name)
+        updated = archive_policy.to_dict()
         kwargs = dict((k, v) for k, v in kwargs.items()
                       if k in updated and (k in UPDATE_ATTR))
         utils.merge_nested_dict(updated, kwargs, depth=1)
-        return self._update("/v1/metric/%s" % id, updated)
+        return self._update("/v1/archive_policy/%s" % name, updated)
 
+    def delete(self, name):
+        return self._delete('/v1/archive_policy/%s' % name)
 

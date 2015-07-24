@@ -17,6 +17,7 @@
 from gnocchiclient import client as gnocchi_client
 from gnocchiclient.openstack.common.apiclient import client
 from gnocchiclient.v1 import metric
+from gnocchiclient.v1 import archive_policy
 
 
 class Client(object):
@@ -50,3 +51,4 @@ class Client(object):
 
         self.http_client = client.BaseClient(self.client)
         self.metrics = metric.MetricManager(self.http_client)
+        self.archive_policy = archive_policy.ArchivePolicyManager(self.http_client)
